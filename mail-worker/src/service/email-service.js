@@ -543,10 +543,14 @@ const emailService = {
 	//处理站内邮件发送
 	async HandleOnSiteEmail(c, receiveEmail, sendEmailData, attList) {
 
-		const { noRecipient  } = await settingService.query(c);
+		const { noRecipient, noRecipientAccount } = await settingService.query(c);
 
 		//查询所有收件人账号信息
 		let accountList = await orm(c).select().from(account).where(inArray(account.email, receiveEmail)).all();
+
+		const noRecipientAccountRow = (noRecipient === settingConst.noRecipient.OPEN && noRecipientAccount)
+			? await accountService.selectById(c, noRecipientAccount)
+			: null;
 
 		//查询所有收件人权限身份
 		const userIds = accountList.map(accountRow => accountRow.userId);
@@ -598,15 +602,23 @@ const emailService = {
 			} else {
 
 				//设置无收件人邮件信息
-				emailValues.userId = 0;
-				emailValues.accountId = 0;
 				emailValues.type = emailConst.type.RECEIVE;
-				emailValues.status = emailConst.status.NOONE;
 
-				//如果无人收件关闭改为拒收
 				if (noRecipient === settingConst.noRecipient.CLOSE) {
+					//如果无人收件关闭改为拒收
+					emailValues.userId = 0;
+					emailValues.accountId = 0;
 					emailValues.status = emailConst.status.BOUNCED;
 					emailValues.message = `Recipient not found: <${email}>`;
+				} else if (noRecipientAccountRow) {
+					//有配置兜底账号，投递给该账号
+					emailValues.userId = noRecipientAccountRow.userId;
+					emailValues.accountId = noRecipientAccountRow.accountId;
+					emailValues.status = emailConst.status.RECEIVE;
+				} else {
+					emailValues.userId = 0;
+					emailValues.accountId = 0;
+					emailValues.status = emailConst.status.NOONE;
 				}
 
 				emailDataList.push(emailValues);

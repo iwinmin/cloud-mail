@@ -290,6 +290,7 @@ const zh = {
     popUp: '弹出',
     noRecipientTitle: '无人收件',
     noRecipientDesc: '即使没有注册的邮箱也能收到邮件',
+    noRecipientAccount: '收件账号',
     preview: '预览',
     help: '帮助',
     document: '项目文档',

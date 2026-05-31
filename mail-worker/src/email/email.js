@@ -26,6 +26,7 @@ export async function email(message, env, ctx) {
 			ruleType,
 			r2Domain,
 			noRecipient,
+			noRecipientAccount,
 			blackSubject,
 			blackContent,
 			blackFrom,
@@ -64,15 +65,22 @@ export async function email(message, env, ctx) {
 			return;
 		}
 
-		let userRow = {}
-
-		if (account) {
-			 userRow = await userService.selectByIdIncludeDel({ env: env }, account.userId);
+		let fallbackAccount = null;
+		if (!account && noRecipient === settingConst.noRecipient.OPEN && noRecipientAccount) {
+			fallbackAccount = await accountService.selectById({ env }, noRecipientAccount);
 		}
 
-		if (account && userRow.email !== env.admin) {
+		const effectiveAccount = account || fallbackAccount;
 
-			let { banEmail, availDomain } = await roleService.selectByUserId({ env: env }, account.userId);
+		let userRow = {}
+
+		if (effectiveAccount) {
+			userRow = await userService.selectByIdIncludeDel({ env: env }, effectiveAccount.userId);
+		}
+
+		if (effectiveAccount && userRow.email !== env.admin) {
+
+			let { banEmail, availDomain } = await roleService.selectByUserId({ env: env }, effectiveAccount.userId);
 
 			if (!roleService.hasAvailDomainPerm(availDomain, message.to)) {
 				message.setReject('The recipient is not authorized to use this domain.');
@@ -109,8 +117,8 @@ export async function email(message, env, ctx) {
 			inReplyTo: email.inReplyTo,
 			relation: email.references,
 			messageId: email.messageId,
-			userId: account ? account.userId : 0,
-			accountId: account ? account.accountId : 0,
+			userId: effectiveAccount ? effectiveAccount.userId : 0,
+			accountId: effectiveAccount ? effectiveAccount.accountId : 0,
 			isDel: isDel.DELETE,
 			status: emailConst.status.SAVING
 		};
@@ -144,7 +152,7 @@ export async function email(message, env, ctx) {
 			console.error(e);
 		}
 
-		emailRow = await emailService.completeReceive({ env }, account ? emailConst.status.RECEIVE : emailConst.status.NOONE, emailRow.emailId);
+		emailRow = await emailService.completeReceive({ env }, effectiveAccount ? emailConst.status.RECEIVE : emailConst.status.NOONE, emailRow.emailId);
 
 
 		if (ruleType === settingConst.ruleType.RULE) {

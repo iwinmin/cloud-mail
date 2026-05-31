@@ -179,8 +179,27 @@
                   </el-tooltip>
                 </div>
                 <div>
-                  <el-switch @change="change" :before-change="beforeChange" :active-value="0" :inactive-value="1"
+                  <el-switch @change="onNoRecipientChange" :before-change="beforeChange" :active-value="0" :inactive-value="1"
                              v-model="setting.noRecipient"/>
+                </div>
+              </div>
+              <div class="setting-item" v-if="setting.noRecipient === 0">
+                <div><span>{{ $t('noRecipientAccount') }}</span></div>
+                <div>
+                  <el-select
+                      :style="`width: 160px;`"
+                      v-model="setting.noRecipientAccount"
+                      :placeholder="$t('noRecipientAccount')"
+                      @change="changeNoRecipientAccount"
+                      clearable
+                  >
+                    <el-option
+                        v-for="item in noRecipientAccounts"
+                        :key="item.accountId"
+                        :label="`[${item.userId}# ${item.userEmail.split('@')[0]}] ${item.email}`"
+                        :value="item.accountId"
+                    />
+                  </el-select>
                 </div>
               </div>
               <div class="setting-item">
@@ -812,7 +831,7 @@
 
 <script setup>
 import {computed, defineOptions, nextTick, reactive, ref} from "vue";
-import {deleteBackground, setBackground, setBlackList, settingQuery, settingSet} from "@/request/setting.js";
+import {deleteBackground, setBackground, setBlackList, settingQuery, settingSet, settingAccountList} from "@/request/setting.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useUiStore} from "@/store/ui.js";
 import {useUserStore} from "@/store/user.js";
@@ -938,6 +957,7 @@ const ruleEmail = ref([])
 const tgMsgFrom = ref('')
 const tgMsgTo = ref('')
 const tgMsgText = ref('')
+const noRecipientAccounts = ref([])
 
 const tgMsgFromOption = [{label: t('show'), value: 'show'}, {label: t('hide'), value: 'hide'}, {label: t('onlyName'), value:'only-name'}]
 const tgMsgToOption = [{label: t('show'), value: 'show'}, {label: t('hide'), value: 'hide'}]
@@ -967,12 +987,34 @@ function getSettings() {
     resetEmailPrefix()
     resetBlackList()
     resetAiCodeFilter()
+    if (settingData.noRecipient === 0) {
+      loadNoRecipientAccounts()
+    }
     nextTick(() => {
       settingReady.value = true
     })
   })
 }
 
+
+function loadNoRecipientAccounts() {
+  settingAccountList().then(list => {
+    noRecipientAccounts.value = list
+  })
+}
+
+function onNoRecipientChange() {
+  change()
+  if (setting.value.noRecipient === 0) {
+    loadNoRecipientAccounts()
+  } else {
+    noRecipientAccounts.value = []
+  }
+}
+
+function changeNoRecipientAccount(accountId) {
+  editSetting({ noRecipientAccount: accountId ?? 0 })
+}
 
 function openNoticePopup() {
   uiStore.showNotice()

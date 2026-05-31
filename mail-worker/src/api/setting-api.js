@@ -1,6 +1,7 @@
 import app from '../hono/hono';
 import result from '../model/result';
 import settingService from '../service/setting-service';
+import accountService from '../service/account-service';
 import userContext from "../security/user-context";
 
 app.put('/setting/set', async (c) => {
@@ -31,5 +32,10 @@ app.delete('/setting/deleteBackground', async (c) => {
 app.put('/setting/setBlacklist', async (c) => {
 	const setting = await settingService.setBlacklist(c, await c.req.json());
 	return c.json(result.ok(setting));
+})
+
+app.get('/setting/accountList', async (c) => {
+	const list = await accountService.listAllActive(c);
+	return c.json(result.ok(list));
 })
 

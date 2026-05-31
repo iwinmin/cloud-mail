@@ -5,6 +5,7 @@ import userService from './user-service';
 import emailService from './email-service';
 import orm from '../entity/orm';
 import account from '../entity/account';
+import user from '../entity/user';
 import { and, asc, eq, gt, inArray, count, sql, ne, or, lt, desc } from 'drizzle-orm';
 import {accountConst, isDel, settingConst} from '../const/entity-const';
 import settingService from './setting-service';
@@ -255,6 +256,21 @@ const accountService = {
 		}
 		await orm(c).update(account).set({ allReceive: accountConst.allReceive.CLOSE }).where(eq(account.userId, userId)).run();
 		await orm(c).update(account).set({ allReceive: accountRow.allReceive ? 0 : 1 }).where(eq(account.accountId, accountId)).run();
+	},
+
+	listAllActive(c) {
+		return orm(c)
+			.select({
+				accountId: account.accountId,
+				email: account.email,
+				userId: account.userId,
+				userEmail: user.email,
+			})
+			.from(account)
+			.innerJoin(user, eq(account.userId, user.userId))
+			.where(and(eq(account.isDel, isDel.NORMAL), eq(user.isDel, isDel.NORMAL)))
+			.orderBy(asc(account.userId), asc(account.accountId))
+			.all();
 	},
 
 	async setAsTop(c, params, userId) {
