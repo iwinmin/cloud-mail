@@ -164,7 +164,7 @@ const emailService = {
 			attachments = [] //附件
 		} = params;
 
-		const { resendTokens, r2Domain, send, domainList } = await settingService.query(c);
+		const { resendTokens, resendUrl, r2Domain, send, domainList } = await settingService.query(c);
 
 		let { imageDataList, html } = await attService.toImageUrlHtml(c, content);
 
@@ -276,7 +276,7 @@ const emailService = {
 					messageId: emailRow.messageId
 				});
 			} else {
-				sendResult = await this.sendByResend(resendToken, {
+				sendResult = await this.sendByResend(resendToken, resendUrl, {
 					name,
 					accountEmail: accountRow.email,
 					receiveEmail,
@@ -411,8 +411,9 @@ const emailService = {
 		};
 	},
 
-	async sendByResend(resendToken, params) {
-		const resend = new Resend(resendToken);
+	async sendByResend(resendToken, resendUrl, params) {
+		const resendOptions = resendUrl ? { baseUrl: resendUrl } : {};
+		const resend = new Resend(resendToken, resendOptions);
 
 		const sendForm = {
 			from: `${params.name} <${params.accountEmail}>`,

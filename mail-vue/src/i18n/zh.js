@@ -186,6 +186,8 @@ const zh = {
     forwardingRulesDesc: '规则转发只会转发设置邮箱所接收的邮件',
     ruleEmailsInputDesc: '多个邮箱用, 分开',
     resendTokenList: 'Token 列表',
+    resendUrl: 'Resend API URL',
+    resendUrlDesc: '自定义 API 地址，留空使用官方接口',
     domain: '域名',
     optional: '可选',
     subjectInputDesc: '请输入邮件主题',

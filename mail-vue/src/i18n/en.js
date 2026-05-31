@@ -186,6 +186,8 @@ const en = {
     forwardingRulesDesc: 'Rule-based forwarding only forwards emails received by the specified address',
     ruleEmailsInputDesc: 'Separate multiple email addresses with commas',
     resendTokenList: 'Token List',
+    resendUrl: 'Resend API URL',
+    resendUrlDesc: 'Custom API endpoint, leave empty to use official Resend API',
     domain: 'Domain',
     optional: 'Optional',
     subjectInputDesc: 'Please enter the email subject',

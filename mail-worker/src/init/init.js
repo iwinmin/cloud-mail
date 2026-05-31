@@ -418,7 +418,9 @@ const dbInit = {
 			`ALTER TABLE user ADD COLUMN send_count INTEGER NOT NULL DEFAULT 0;`,
 
 			`ALTER TABLE attachments ADD COLUMN status INTEGER NOT NULL DEFAULT 0;`,
-			`ALTER TABLE attachments ADD COLUMN type INTEGER NOT NULL DEFAULT 0;`
+			`ALTER TABLE attachments ADD COLUMN type INTEGER NOT NULL DEFAULT 0;`,
+
+			`ALTER TABLE setting ADD COLUMN resend_url TEXT NOT NULL DEFAULT '';`
 		];
 
 		const promises = ADD_COLUMN_SQL_LIST.map(async (sql) => {

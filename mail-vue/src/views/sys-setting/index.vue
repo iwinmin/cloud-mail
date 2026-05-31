@@ -218,6 +218,15 @@
                   </el-button>
                 </div>
               </div>
+              <div class="setting-item" v-if="!setting.hasCfEmail">
+                <div><span>{{ $t('resendUrl') }}</span></div>
+                <div>
+                  <el-button class="opt-button" style="margin-top: 0" @click="openResendUrlForm" size="small"
+                             type="primary">
+                    <Icon icon="fluent:settings-48-regular" width="16" height="16"/>
+                  </el-button>
+                </div>
+              </div>
               <div class="setting-item">
                 <div><span>{{ $t('blackList') }}</span></div>
                 <div>
@@ -484,6 +493,13 @@
           </el-select>
           <el-input type="text" :placeholder="$t('addResendTokenDesc')" v-model="resendTokenForm.token"/>
           <el-button type="primary" :loading="settingLoading" @click="saveResendToken">{{ $t('save') }}</el-button>
+        </form>
+      </el-dialog>
+      <el-dialog v-model="resendUrlShow" :title="$t('resendUrl')" width="400"
+                 @closed="resendUrlInput = setting.resendUrl || ''">
+        <form>
+          <el-input type="text" :placeholder="$t('resendUrlDesc')" v-model="resendUrlInput"/>
+          <el-button type="primary" :loading="settingLoading" @click="saveResendUrl">{{ $t('save') }}</el-button>
         </form>
       </el-dialog>
       <el-dialog v-model="r2DomainShow" :title="$t('addOsDomain')" width="340"
@@ -863,6 +879,8 @@ const accountStore = useAccountStore();
 const userStore = useUserStore();
 const editTitleShow = ref(false)
 const resendTokenFormShow = ref(false)
+const resendUrlShow = ref(false)
+const resendUrlInput = ref('')
 const blackFormShow = ref(false)
 const aiCodeFilterShow = ref(false)
 const r2DomainShow = ref(false)
@@ -1466,6 +1484,15 @@ function saveR2domain() {
 
 function openResendForm() {
   resendTokenFormShow.value = true
+}
+
+function openResendUrlForm() {
+  resendUrlInput.value = setting.value.resendUrl || ''
+  resendUrlShow.value = true
+}
+
+function saveResendUrl() {
+  editSetting({ resendUrl: resendUrlInput.value })
 }
 
 function openBlackListForm() {
